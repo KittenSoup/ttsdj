@@ -29,6 +29,7 @@ namespace KeepTalking
                 Volume = 80
             };
             string lastTrackId = "";
+            NowPlaying previouslyPlaying = null;
             if (args.Length == 0)
             {
                 System.Console.WriteLine("Usage: ttsdj.exe \"spotify oauth token\" [\"voice\"]");
@@ -82,7 +83,14 @@ namespace KeepTalking
                                 TrackId = (string)s["item"]["id"],
                                 IsPlaying = (bool)s["is_playing"]
                             };
-                            string output = "Now listening to" + nowPlaying.Title + " by " + nowPlaying.Artist;
+
+                            string output = "";
+
+                            if (previouslyPlaying != null)
+                            {
+                                output += "That was " + previouslyPlaying.Title + " by " + previouslyPlaying.Artist + ", ";
+                            }
+                            output += "Next up is " + nowPlaying.Title + " by " + nowPlaying.Artist;
                             synthesizer.SetOutputToDefaultAudioDevice();
                             synthesizer.SelectVoice(voice);
                             if (nowPlaying.TrackId != lastTrackId && nowPlaying.IsPlaying == true)
@@ -90,15 +98,13 @@ namespace KeepTalking
                                 synthesizer.Speak(output);
                                 lastTrackId = nowPlaying.TrackId;
                             }
-                            
+                            previouslyPlaying = nowPlaying;
+
                         } catch (Newtonsoft.Json.JsonReaderException)
                         {
                             Console.WriteLine("Not playing anything");
                         }
-                        // Above three lines can be replaced with new helper method below
-                        // string responseBody = await client.GetStringAsync(uri);
 
-                        // Console.WriteLine(responseBody);
                    
                     }
                     catch (HttpRequestException e)
